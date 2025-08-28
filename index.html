@@ -3,63 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafío Matemático ✨</title>
+    <title>Desafío Profe Nao ✨</title>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- Para renderizar Markdown de Gemini -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            touch-action: manipulation;
-        }
-        .screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            width: 100%;
-            padding: 1rem;
-            box-sizing: border-box;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s;
-            visibility: hidden;
-            opacity: 0;
-        }
-        .screen.visible {
-            visibility: visible;
-            opacity: 1;
-        }
-        .feedback-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 999; opacity: 0; pointer-events: none;
-            transition: opacity 0.1s ease-in-out;
-        }
+        body { font-family: 'Inter', sans-serif; touch-action: manipulation; }
+        .screen { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; padding: 1rem; box-sizing: border-box; position: absolute; top: 0; left: 0; transition: opacity 0.3s ease-in-out, visibility 0.3s; visibility: hidden; opacity: 0; }
+        .screen.visible { visibility: visible; opacity: 1; }
+        .feedback-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.1s ease-in-out; }
         .feedback-overlay.show { opacity: 0.7; }
-        .timer-bar-inner {
-            transition: width 5s linear; /* Duración del timer */
-            height: 100%;
-            background: linear-gradient(90deg, rgba(59,130,246,1) 0%, rgba(37,99,235,1) 100%);
-        }
-        .answer-grid-btn {
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-        }
+        .timer-bar-inner { transition: width 5s linear; height: 100%; background: linear-gradient(90deg, rgba(59,130,246,1) 0%, rgba(37,99,235,1) 100%); }
+        .answer-grid-btn { transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; }
         .answer-grid-btn:active { transform: scale(0.95); }
-        .gemini-explanation {
-            background-color: rgba(0,0,0,0.2);
-            border-left: 4px solid #3b82f6;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1rem;
-            text-align: left;
-            max-height: 200px;
-            overflow-y: auto;
-        }
+        .gemini-explanation { background-color: rgba(0,0,0,0.2); border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: left; max-height: 200px; overflow-y: auto; }
         .gemini-explanation p { margin-bottom: 0.5rem; }
         .gemini-explanation code { background-color: #4b5563; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
         .gemini-explanation strong { color: #60a5fa; }
@@ -70,26 +33,35 @@
     <main id="app-container">
         <!-- 1. Pantalla de Bienvenida -->
         <section id="name-screen" class="screen">
-            <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md pb-12">
+            <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md">
                 <h1 class="text-3xl font-bold mb-2 text-blue-400">¡Bienvenida/o!</h1>
                 <p class="text-slate-400 mb-6">¿Cuál es tu nombre?</p>
                 <input id="name-input" type="text" placeholder="Escribe tu nombre aquí..." class="w-full bg-slate-700 text-white p-4 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <button id="start-btn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition-transform transform hover:scale-105">Comenzar</button>
             </div>
         </section>
-
-        <!-- 2. Pantalla de Menú Principal -->
-        <section id="menu-screen" class="screen">
-            <div class="w-full max-w-3xl text-center pb-12">
-                <h1 id="welcome-message" class="text-3xl md:text-4xl font-bold mb-8"></h1>
-                <div id="game-menu-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
-                <button id="gemini-suggest-btn" class="mt-8 w-full max-w-sm mx-auto bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-90 text-white font-bold py-3 px-5 rounded-lg transition-transform transform hover:scale-105 flex items-center justify-center gap-2">
-                    ✨ Sugerir Tema de Estudio
-                </button>
+        
+        <!-- 2. Pantalla de Categorías -->
+        <section id="category-screen" class="screen">
+            <div class="w-full max-w-md text-center">
+                <h1 id="category-welcome-message" class="text-3xl md:text-4xl font-bold mb-8">¿Qué quieres practicar?</h1>
+                <div class="space-y-4">
+                    <button data-category="Números" class="category-btn w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 px-6 rounded-lg text-2xl transition-transform transform hover:scale-105">Números</button>
+                    <button data-category="Álgebra" class="category-btn w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 px-6 rounded-lg text-2xl transition-transform transform hover:scale-105">Álgebra</button>
+                </div>
             </div>
         </section>
 
-        <!-- 3. Pantalla de Juego -->
+        <!-- 3. Pantalla de Menú de Juegos -->
+        <section id="menu-screen" class="screen">
+            <div class="w-full max-w-3xl text-center">
+                <h1 id="welcome-message" class="text-3xl md:text-4xl font-bold mb-8"></h1>
+                <div id="game-menu-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                <button id="back-to-category-btn" class="mt-8 text-slate-400 hover:text-white transition">← Volver a categorías</button>
+            </div>
+        </section>
+
+        <!-- 4. Pantalla de Juego -->
         <section id="game-screen" class="screen flex-col justify-between">
             <header class="w-full max-w-4xl p-4 flex justify-between items-center">
                 <div id="lives-container" class="flex gap-2"></div>
@@ -98,40 +70,36 @@
                     <p class="text-xs text-slate-400">PUNTOS</p>
                 </div>
                  <div class="text-right">
-                    <span class="text-3xl font-black text-slate-400" id="question-counter">1/80</span>
+                    <span class="text-3xl font-black text-slate-400" id="question-counter"></span>
                     <p class="text-xs text-slate-500">PREGUNTA</p>
                 </div>
             </header>
             <div class="w-full max-w-4xl px-4">
                 <div class="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
-                    <div id="timer-bar" class="timer-bar-inner rounded-full" style="width: 100%;"></div>
+                    <div id="timer-bar" class="timer-bar-inner"></div>
                 </div>
             </div>
             <div class="flex-grow flex items-center justify-center text-center px-4">
                 <h2 id="question" class="text-4xl md:text-6xl font-bold"></h2>
             </div>
-            <footer class="w-full p-2 pb-12">
-                <div id="answer-grid" class="grid grid-cols-2 gap-2 md:gap-4 max-w-4xl mx-auto"></div>
+            <footer class="w-full p-2">
+                <div id="answer-grid" class="gap-2 md:gap-4 max-w-4xl mx-auto"></div>
             </footer>
         </section>
 
-        <!-- 4. Pantalla de Fin de Juego -->
+        <!-- 5. Pantalla de Fin de Juego -->
         <section id="game-over-screen" class="screen">
-            <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md pb-12">
+            <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl text-center w-full max-w-md">
                 <h1 class="text-4xl font-black mb-2 text-blue-400">¡Juego Terminado!</h1>
                 <p class="text-slate-400 mb-4">Tu puntaje final es:</p>
                 <p id="final-score" class="text-7xl font-bold mb-6">0</p>
-                <p id="new-highscore-message" class="text-yellow-400 font-semibold mb-6 hidden">¡Nuevo récord personal!</p>
-                
+                <p id="new-highscore-message" class="text-yellow-400 font-semibold mb-6 hidden">¡Nuevo récord!</p>
                 <div id="gemini-help-container" class="hidden text-left mt-4">
                     <p class="text-slate-400">Fallaste en esta pregunta:</p>
                     <p id="last-failed-question" class="font-bold text-lg bg-slate-700 p-3 rounded-md my-2"></p>
-                    <button id="gemini-explain-btn" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-90 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center gap-2">
-                        ✨ Pide una Pista a Gemini
-                    </button>
+                    <button id="gemini-explain-btn" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-90 text-white font-bold py-3 px-5 rounded-lg flex items-center justify-center gap-2">✨ Pide una Pista a Gemini</button>
                     <div id="gemini-explanation-container" class="mt-4"></div>
                 </div>
-
                 <div class="flex gap-4 mt-6">
                     <button id="play-again-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-5 rounded-lg">Jugar de Nuevo</button>
                     <button id="back-to-menu-btn" class="w-full bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-5 rounded-lg">Menú</button>
@@ -139,12 +107,12 @@
             </div>
         </section>
         
-        <!-- 5. Pantalla de Puntajes -->
+        <!-- 6. Pantalla de Puntajes -->
         <section id="scores-screen" class="screen">
-             <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md pb-12">
+             <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md">
                 <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">Mis Récords</h1>
                 <div id="scores-list" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
-                <button id="scores-back-btn" class="mt-6 w-full bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-5 rounded-lg">Volver al Menú</button>
+                <button id="scores-back-btn" class="mt-6 w-full bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-5 rounded-lg">Volver</button>
             </div>
         </section>
     </main>
@@ -155,20 +123,37 @@
         <div id="modal-content" class="bg-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center"></div>
     </div>
     
-    <footer class="fixed bottom-0 left-0 w-full p-4 flex justify-center items-center">
-        <a href="https://www.instagram.com/la_transformada_de_Naomi" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-slate-500 hover:text-slate-300 transition-colors text-base">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.282.24.705.275 1.486.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/>
-            </svg>
-            <span>@la_transformada_de_Naomi</span>
-        </a>
+    <footer id="social-footer" class="fixed bottom-0 left-0 w-full p-4 flex justify-center items-center">
+        <div class="flex items-center gap-6 bg-slate-800/50 backdrop-blur-sm px-6 py-2 rounded-full">
+            <a href="https://www.instagram.com/la_transformada_de_Naomi" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.282.24.705.275 1.486.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/></svg>
+                <span>@la_transformada_de_Naomi</span>
+            </a>
+            <a href="https://www.tiktok.com/@la_transformada_de_naomi" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M9 0h1.98c.144.715.54 1.617 1.235 2.512C12.895 3.389 13.797 4 15 4v2c-1.753 0-3.07-.814-4-1.829V11a5 5 0 1 1-5-5v2a3 3 0 1 0 3 3V0Z"/></svg>
+                 <span>@la_transformada_de_naomi</span>
+            </a>
+        </div>
     </footer>
 
     <script>
+        // --- Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const screens = { name: document.getElementById('name-screen'), menu: document.getElementById('menu-screen'), game: document.getElementById('game-screen'), gameOver: document.getElementById('game-over-screen'), scores: document.getElementById('scores-screen') };
+            // --- El resto del script de la app va aquí (sin cambios) ---
+            const screens = { name: document.getElementById('name-screen'), category: document.getElementById('category-screen'), menu: document.getElementById('menu-screen'), game: document.getElementById('game-screen'), gameOver: document.getElementById('game-over-screen'), scores: document.getElementById('scores-screen') };
             const nameInput = document.getElementById('name-input');
             const startBtn = document.getElementById('start-btn');
+            const categoryWelcomeMessage = document.getElementById('category-welcome-message');
             const welcomeMessage = document.getElementById('welcome-message');
             const gameMenuGrid = document.getElementById('game-menu-grid');
             const livesContainer = document.getElementById('lives-container');
@@ -183,40 +168,43 @@
             const backToMenuBtn = document.getElementById('back-to-menu-btn');
             const scoresList = document.getElementById('scores-list');
             const scoresBackBtn = document.getElementById('scores-back-btn');
+            const backToCategoryBtn = document.getElementById('back-to-category-btn');
             const feedbackCorrect = document.getElementById('feedback-correct');
             const feedbackIncorrect = document.getElementById('feedback-incorrect');
             const geminiHelpContainer = document.getElementById('gemini-help-container');
             const lastFailedQuestionDisplay = document.getElementById('last-failed-question');
             const geminiExplainBtn = document.getElementById('gemini-explain-btn');
             const geminiExplanationContainer = document.getElementById('gemini-explanation-container');
-            const geminiSuggestBtn = document.getElementById('gemini-suggest-btn');
             const modal = document.getElementById('modal');
             const modalContent = document.getElementById('modal-content');
+            const socialFooter = document.getElementById('social-footer');
 
             let state = {
-                playerName: '', currentScreen: 'name', currentGameType: null, score: 0, lives: 3,
-                timerInterval: null, highScores: {}, questionNumber: 0,
+                playerName: '', currentScreen: 'name', currentGameType: null, currentCategory: null,
+                score: 0, lives: 3, timerInterval: null, highScores: {}, questionNumber: 0,
                 currentCorrectAnswer: null, lastFailedQuestion: null, lastFailedQuestionText: '',
                 generatedQuestions: new Set()
             };
 
-            const GAME_MODES = [ 'Suma y Resta', 'Multiplicación', 'División', 'Potencias', 'Raíces', 'Descomposición', 'Puntajes' ];
-            const MAX_QUESTIONS = 80;
+            const GAME_MODES = {
+                'Números': [ 'Suma y Resta', 'Multiplicación', 'División', 'Potencias', 'Potencias 2', 'Raíces', 'Descomposición de Raíces', 'Logaritmos', 'Puntajes' ],
+                'Álgebra': [ 'Factorización', 'Productos Notables', 'Puntajes' ]
+            };
+            const MAX_QUESTIONS_NUMBERS = 80;
+            const MAX_QUESTIONS_ALGEBRA = 40;
+            const TIMER_NUMBERS = 5;
+            const TIMER_ALGEBRA = 8;
 
-            let correctSound, incorrectSound;
-            let audioInitialized = false;
+            let correctSound, incorrectSound, audioInitialized = false;
 
             async function initAudio() {
                 if (audioInitialized || typeof Tone === 'undefined') return;
                 try {
                     await Tone.start();
-                    console.log('AudioContext started successfully.');
                     correctSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.1 } }).toDestination();
                     incorrectSound = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
                     audioInitialized = true;
-                } catch (e) {
-                    console.error("Could not start Tone.js audio context:", e);
-                }
+                } catch (e) { console.error("Could not start Tone.js audio context:", e); }
             }
 
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
@@ -226,10 +214,7 @@
                     const response = await fetch(API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: userPrompt }] }],
-                            systemInstruction: { parts: [{ text: systemPrompt }] },
-                        }),
+                        body: JSON.stringify({ contents: [{ parts: [{ text: userPrompt }] }], systemInstruction: { parts: [{ text: systemPrompt }] } }),
                     });
                     if (!response.ok) throw new Error(`API Error: ${response.status}`);
                     const data = await response.json();
@@ -247,32 +232,19 @@
                 const explanation = await callGeminiAPI(systemPrompt, userPrompt);
                 geminiExplanationContainer.innerHTML = `<div class="gemini-explanation">${marked.parse(explanation)}</div>`;
             }
-
-            async function getGeminiSuggestion() {
-                showModal(`<p class="text-2xl mb-4">✨</p><p class="animate-pulse">Analizando tu progreso...</p>`);
-                const scoresString = Object.entries(state.highScores).map(([game, score]) => `${game}: ${score} puntos`).join(', ');
-                if (!scoresString) {
-                    showModal(`<p class="text-2xl mb-4">🤔</p><p>Aún no tienes suficientes datos. ¡Juega una partida para que pueda ayudarte!</p>`);
-                    return;
-                }
-                const systemPrompt = "Eres un tutor académico motivacional. Basado en los puntajes de un estudiante, identifica su área más débil y sugiérele amablemente que la practique. Dale un breve consejo para mejorar. Sé conciso, alentador y responde en español usando Markdown.";
-                const userPrompt = `Estos son mis puntajes: ${scoresString}. ¿En qué tema debería enfocarme y por qué?`;
-                const suggestion = await callGeminiAPI(systemPrompt, userPrompt);
-                showModal(marked.parse(suggestion));
-            }
             
             function showScreen(screenName) {
                 Object.values(screens).forEach(screen => screen.classList.remove('visible'));
                 if (screens[screenName]) screens[screenName].classList.add('visible');
                 state.currentScreen = screenName;
-            }
 
-            function showModal(content) {
-                modalContent.innerHTML = content + `<button id="close-modal-btn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Entendido</button>`;
-                modal.classList.remove('hidden');
-                document.getElementById('close-modal-btn').addEventListener('click', () => modal.classList.add('hidden'));
+                if (screenName === 'name' || screenName === 'category') {
+                    socialFooter.classList.remove('hidden');
+                } else {
+                    socialFooter.classList.add('hidden');
+                }
             }
-
+            
             function saveState() { localStorage.setItem('mathChallengeData', JSON.stringify({ playerName: state.playerName, highScores: state.highScores })); }
             
             function loadState() {
@@ -288,9 +260,8 @@
 
             function init() {
                 if (loadState() && state.playerName) {
-                    welcomeMessage.textContent = `¿Qué quieres practicar hoy, ${state.playerName}?`;
-                    populateMenu();
-                    showScreen('menu');
+                    categoryWelcomeMessage.textContent = `Hola, ${state.playerName}. ¿Qué quieres practicar?`;
+                    showScreen('category');
                 } else {
                     showScreen('name');
                 }
@@ -301,22 +272,36 @@
                         await initAudio();
                         state.playerName = name;
                         saveState();
-                        welcomeMessage.textContent = `¿Qué quieres practicar hoy, ${state.playerName}?`;
-                        populateMenu();
-                        showScreen('menu');
+                        categoryWelcomeMessage.textContent = `Hola, ${name}. ¿Qué quieres practicar?`;
+                        showScreen('category');
                     }
                 });
 
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const category = btn.dataset.category;
+                        state.currentCategory = category;
+                        populateMenu(category);
+                        showScreen('menu');
+                    });
+                });
+
+                backToCategoryBtn.addEventListener('click', () => showScreen('category'));
                 playAgainBtn.addEventListener('click', () => startGame(state.currentGameType));
-                backToMenuBtn.addEventListener('click', () => showScreen('menu'));
-                scoresBackBtn.addEventListener('click', () => showScreen('menu'));
-                geminiExplainBtn.addEventListener('click', getGeminiExplanation);
-                geminiSuggestBtn.addEventListener('click', getGeminiSuggestion);
+                backToMenuBtn.addEventListener('click', () => {
+                    populateMenu(state.currentCategory);
+                    showScreen('menu');
+                });
+                scoresBackBtn.addEventListener('click', () => {
+                    populateMenu(state.currentCategory);
+                    showScreen('menu');
+                });
             }
 
-            function populateMenu() {
+            function populateMenu(category) {
                 gameMenuGrid.innerHTML = '';
-                GAME_MODES.forEach(mode => {
+                welcomeMessage.textContent = `Práctica de ${category}`;
+                GAME_MODES[category].forEach(mode => {
                     const button = document.createElement('button');
                     button.className = "p-6 bg-slate-800 rounded-lg text-lg font-semibold transition-transform transform hover:scale-105 hover:bg-blue-600";
                     button.textContent = mode;
@@ -345,7 +330,8 @@
             }
 
             function nextQuestion() {
-                if (state.questionNumber >= MAX_QUESTIONS) {
+                const maxQuestions = state.currentCategory === 'Álgebra' ? MAX_QUESTIONS_ALGEBRA : MAX_QUESTIONS_NUMBERS;
+                if (state.questionNumber >= maxQuestions) {
                     endGame();
                     return;
                 }
@@ -358,12 +344,16 @@
                 state.currentCorrectAnswer = questionData.correctAnswer;
                 
                 answerGrid.innerHTML = '';
+                const isAlgebra = state.currentCategory === 'Álgebra';
+                answerGrid.className = isAlgebra ? 'grid grid-cols-1 gap-2 md:gap-4 max-w-4xl mx-auto' : 'grid grid-cols-2 gap-2 md:gap-4 max-w-4xl mx-auto';
+                
                 const answers = shuffleArray(questionData.answers);
                 const colors = shuffleArray(['bg-green-600', 'bg-red-600', 'bg-yellow-500', 'bg-purple-600']);
                 
                 answers.forEach((answer, index) => {
                     const button = document.createElement('button');
-                    button.className = `answer-grid-btn ${colors[index]} hover:opacity-90 text-white font-bold text-xl md:text-3xl p-8 md:p-12 rounded-2xl`;
+                    const textSize = isAlgebra ? 'text-xl md:text-2xl p-6 md:p-8' : 'text-xl md:text-3xl p-8 md:p-12';
+                    button.className = `answer-grid-btn ${colors[index]} hover:opacity-90 text-white font-bold rounded-2xl ${textSize}`;
                     button.innerHTML = answer;
                     button.onclick = () => handleAnswer(answer === state.currentCorrectAnswer, questionData);
                     answerGrid.appendChild(button);
@@ -394,15 +384,16 @@
             
             function startTimer() {
                 clearInterval(state.timerInterval);
+                const timerDuration = state.currentCategory === 'Álgebra' ? TIMER_ALGEBRA : TIMER_NUMBERS;
                 timerBar.style.transition = 'none';
                 timerBar.style.width = '100%';
                 void timerBar.offsetWidth;
-                timerBar.style.transition = 'width 5s linear';
+                timerBar.style.transition = `width ${timerDuration}s linear`;
                 timerBar.style.width = '0%';
                 state.timerInterval = setTimeout(() => {
                     const questionData = state.lastFailedQuestion || generateQuestion(state.currentGameType, state.questionNumber);
                     handleAnswer(false, questionData);
-                }, 5000);
+                }, timerDuration * 1000);
             }
 
             function endGame() {
@@ -416,22 +407,17 @@
                 } else {
                     newHighscoreMessage.classList.add('hidden');
                 }
-
                 if (state.lastFailedQuestion) {
                     lastFailedQuestionDisplay.innerHTML = state.lastFailedQuestion.question;
                     geminiHelpContainer.classList.remove('hidden');
                 }
-
                 showScreen('gameOver');
             }
 
             function isPrime(num) {
-                if (num <= 1) return false;
-                if (num <= 3) return true;
+                if (num <= 1) return false; if (num <= 3) return true;
                 if (num % 2 === 0 || num % 3 === 0) return false;
-                for (let i = 5; i * i <= num; i = i + 6) {
-                    if (num % i === 0 || num % (i + 2) === 0) return false;
-                }
+                for (let i = 5; i * i <= num; i = i + 6) { if (num % i === 0 || num % (i + 2) === 0) return false; }
                 return true;
             }
 
@@ -444,220 +430,212 @@
                 } while (state.generatedQuestions.has(questionData.questionKey) && attempts < 20);
                 
                 state.generatedQuestions.add(questionData.questionKey);
-
-                const answers = (type === 'Descomposición') ? questionData.answers : generateOptions(questionData.correctAnswer);
+                const answers = questionData.answers.length > 0 ? questionData.answers : generateOptions(questionData.correctAnswer);
                 
-                return { 
-                    question: questionData.question, 
-                    questionText: questionData.questionText, 
-                    correctAnswer: questionData.correctAnswer, 
-                    answers 
-                };
+                return { question: questionData.question, questionText: questionData.questionText, correctAnswer: questionData.correctAnswer, answers };
             }
 
             function getNewQuestion(type, level) {
-                let question = '', questionText = '', correctAnswer = 0, questionKey = '', answers = [];
-                const difficulty = Math.ceil(level / 1.5);
-
                 switch (type) {
-                    case 'Suma y Resta': {
-                        const a = Math.floor(Math.random() * difficulty * 10) + difficulty * 2;
-                        const b = Math.floor(Math.random() * difficulty * 10) + difficulty * 2;
-                        const isSum = Math.random() > 0.5 || a < b;
-                        if (isSum) {
-                            question = `${a} + ${b}`;
-                            correctAnswer = a + b;
-                            questionKey = `${a}+${b}`;
-                        } else {
-                            question = `${a} - ${b}`;
-                            correctAnswer = a - b;
-                            questionKey = `${a}-${b}`;
-                        }
-                        break;
-                    }
-                    case 'Multiplicación': {
-                        const a = Math.floor(Math.random() * (difficulty / 2 + 2)) + 2;
-                        const b = Math.floor(Math.random() * 15) + Math.ceil(level / 2.5);
-                        question = `${a} × ${b}`;
-                        correctAnswer = a * b;
-                        questionKey = `${a}*${b}`;
-                        break;
-                    }
-                    case 'División': {
-                        const divisor = Math.floor(Math.random() * 12) + Math.ceil(level/3);
-                        const quotient = Math.floor(Math.random() * (difficulty + 2)) + 2;
-                        const dividend = divisor * quotient;
-                        question = `${dividend} ÷ ${divisor}`;
-                        correctAnswer = quotient;
-                        questionKey = `${dividend}/${divisor}`;
-                        break;
-                    }
-                    case 'Potencias': {
-                        const base = Math.floor(Math.random() * Math.min(level / 2, 15)) + 2;
-                        const exponent = Math.floor(Math.random() * 2) + 2 + Math.floor(level / 15);
-                        question = `${base}<sup>${exponent}</sup>`;
-                        questionText = `${base}^${exponent}`;
-                        correctAnswer = Math.pow(base, exponent);
-                        questionKey = `${base}^${exponent}`;
-                        break;
-                    }
-                    case 'Raíces': {
-                        const base = Math.floor(Math.random() * (difficulty + 5)) + 3;
-                        const squared = base * base;
-                        question = `√${squared}`;
-                        questionText = `sqrt(${squared})`;
-                        correctAnswer = base;
-                        questionKey = `sqrt${squared}`;
-                        break;
-                    }
-                    case 'Descomposición': {
-                        return generateDecompositionQuestion(level);
-                    }
-                }
-                
-                if (questionText === '') questionText = question;
-                return { question, questionText, correctAnswer, questionKey, answers };
-            }
-
-            function generateDecompositionQuestion(level) {
-                const difficulty = Math.ceil(level / 1.5);
-                let numberToDecompose;
-                let isForcedPrime = Math.random() < 0.15 && level > 5;
-
-                let attempts = 0;
-                do {
-                    numberToDecompose = Math.floor(Math.random() * difficulty * 4) + 10 + difficulty;
-                    attempts++;
-                } while (state.generatedQuestions.has(`decomp-${numberToDecompose}`) && attempts < 20);
-
-                if (isForcedPrime) {
-                    let primeCandidate = numberToDecompose;
-                    while (!isPrime(primeCandidate)) { primeCandidate++; }
-                    numberToDecompose = primeCandidate;
-                } else if (isPrime(numberToDecompose)) {
-                    numberToDecompose++;
-                }
-
-                const question = `${numberToDecompose}`;
-                const questionKey = `decomp-${numberToDecompose}`;
-                let correctAnswer;
-                let options = new Set();
-
-                if (isPrime(numberToDecompose)) {
-                    correctAnswer = "Es primo";
-                    options.add(correctAnswer);
-                    while (options.size < 4) {
-                        const f1 = Math.floor(Math.random() * 10) + 2;
-                        const f2 = Math.floor(Math.random() * 10) + 2;
-                        options.add(`${f1} × ${f2}`);
-                    }
-                } else if (level < 20) {
-                    let factors = [];
-                    for (let i = 2; i * i <= numberToDecompose; i++) {
-                        if (numberToDecompose % i === 0) {
-                            factors.push(i, numberToDecompose / i);
-                            break;
-                        }
-                    }
-                    correctAnswer = `${factors[1]} × ${factors[0]}`;
-                    options.add(correctAnswer);
-                    // Generar opciones incorrectas de forma segura
-                    while (options.size < 4) {
-                        const offset = Math.floor(Math.random() * 3) + 1;
-                        const wrongF1 = factors[0] + (Math.random() > 0.5 ? offset : -offset);
-                        const wrongF2 = factors[1] + (Math.random() > 0.5 ? offset : -offset);
-                        if (wrongF1 > 1 && wrongF2 > 1 && (wrongF1 * wrongF2 !== numberToDecompose)) {
-                            options.add(`${wrongF2} × ${wrongF1}`);
-                        } else {
-                            const randF1 = Math.floor(Math.random() * 15) + 2;
-                            const randF2 = Math.floor(Math.random() * 15) + 2;
-                            if (randF1 * randF2 !== numberToDecompose) options.add(`${randF1} × ${randF2}`);
-                        }
-                    }
-                } else {
-                    let f = [1,1,1];
-                    let rem = numberToDecompose;
-                    for (let i = 2; i*i <= rem; i++) { if (rem % i === 0) { f[0] = i; rem /= i; break; } }
-                    for (let i = 2; i*i <= rem; i++) { if (rem % i === 0) { f[1] = i; rem /= i; break; } }
-                    f[2] = rem;
-
-                    if(f.includes(1) || f.length !== 3) {
-                         for (let i = 2; i * i <= numberToDecompose; i++) {
-                            if (numberToDecompose % i === 0) { correctAnswer = `${numberToDecompose / i} × ${i}`; break; }
-                        }
-                    } else {
-                        correctAnswer = shuffleArray(f).join(' × ');
-                    }
-                    
-                    options.add(correctAnswer);
-                    while (options.size < 4) {
-                        const f1 = Math.floor(Math.random() * 10) + 2;
-                        const f2 = Math.floor(Math.random() * 10) + 2;
-                        const f3 = Math.floor(Math.random() * 10) + 2;
-                        if (f1 * f2 * f3 !== numberToDecompose) options.add(`${f1} × ${f2} × ${f3}`);
-                    }
-                }
-                return { question, questionText: question, correctAnswer, questionKey, answers: Array.from(options) };
-            }
-
-            function generateOptions(correct) {
-                let options = new Set([correct]);
-                while (options.size < 4) {
-                    const offsetMagnitude = Math.max(1, Math.floor(correct / 10) || 1);
-                    const offset = (Math.floor(Math.random() * 10) + 1) * (Math.random() > 0.5 ? 1 : -1) * offsetMagnitude;
-                    let wrongAnswer = correct + offset;
-                    if (wrongAnswer !== correct && wrongAnswer >= 0) {
-                        options.add(wrongAnswer);
-                    }
-                }
-                return Array.from(options);
-            }
-
-            function shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-                return array;
-            }
-
-            function updateHUD() {
-                scoreDisplay.textContent = state.score;
-                questionCounterDisplay.textContent = `${state.questionNumber}/${MAX_QUESTIONS}`;
-                livesContainer.innerHTML = '';
-                for (let i = 0; i < 3; i++) {
-                    const heartClass = i < state.lives ? 'text-red-500' : 'text-slate-600';
-                    livesContainer.innerHTML += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24" fill="currentColor" class="w-8 h-8 ${heartClass}"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-1.344-.688 11.855 11.855 0 01-1.966-1.56c-1.11-1.04-1.966-2.174-2.634-3.433C6.68 14.08 6 12.86 6 11.693c0-1.05.37-2.09.986-2.914.615-.825 1.472-1.457 2.457-1.784a4.42 4.42 0 012.796.037c.99.345 1.853.973 2.534 1.784.68.81 1.035 1.86.986 2.914-.049 1.167-.68 2.388-1.354 3.642a11.855 11.855 0 01-1.966 1.56 15.247 15.247 0 01-1.344.688l-.022.012-.007.003z" /></svg>`;
+                    case 'Suma y Resta': 
+                    case 'Multiplicación': 
+                    case 'División': 
+                    case 'Potencias': 
+                    case 'Raíces': 
+                        return generateNumberQuestion(type, level);
+                    case 'Descomposición': return generateDecompositionQuestion(level);
+                    case 'Factorización': return generateFactorizationQuestion(level);
+                    case 'Productos Notables': return generateNotableProductQuestion(level);
+                    case 'Potencias 2': return generatePowerPropertiesQuestion(level);
+                    case 'Logaritmos': return generateLogarithmQuestion(level);
+                    case 'Descomposición de Raíces': return generateRootDecompositionQuestion(level);
                 }
             }
             
-            function playFeedback(isCorrect) {
-                if (audioInitialized) {
-                    if (isCorrect) {
-                        correctSound.triggerAttackRelease("C5", "0.1");
-                    } else {
-                        incorrectSound.triggerAttackRelease("G2", "0.2");
-                    }
-                }
-                const overlay = isCorrect ? feedbackCorrect : feedbackIncorrect;
-                overlay.classList.add('show');
-                setTimeout(() => {
-                    overlay.classList.remove('show');
-                }, 150);
-            }
+            function generateNotableProductQuestion(level) {
+                let type;
+                if (level <= 10) { type = Math.random() > 0.5 ? 0 : 3; } 
+                else if (level <= 25) { type = Math.floor(Math.random() * 4); }
+                else { type = Math.floor(Math.random() * 4); }
 
-            function showScores() {
-                scoresList.innerHTML = '';
-                const sortedGames = GAME_MODES.filter(g => g !== 'Puntajes' && state.highScores[g]);
-                if (sortedGames.length === 0) {
-                    scoresList.innerHTML = '<p class="text-slate-400 text-center">Aún no tienes récords. ¡A jugar!</p>';
-                } else {
-                    sortedGames.forEach(game => {
-                        scoresList.innerHTML += `<div class="flex justify-between items-center bg-slate-700 p-3 rounded-lg"><span class="font-semibold">${game}</span><span class="font-bold text-blue-400">${state.highScores[game]}</span></div>`;
-                    });
+                let a = Math.floor(Math.random() * 5) + 1 + Math.floor(level/10);
+                let b = Math.floor(Math.random() * 5) + 1 + Math.floor(level/10);
+                let question = '', correctAnswer = '', questionKey = '';
+                let options = new Set();
+                
+                if (level <= 25 && type !== 0) { a = 1; }
+                if (level > 25 && a === 1) { a = 2; }
+
+                switch(type) {
+                    case 0: // Factor Común
+                        let factor = Math.floor(Math.random() * 5) + 2 + Math.floor(level/10);
+                        let c = Math.floor(Math.random() * 5) + 1 + Math.floor(level/10);
+                        if (factor === c) c++;
+                        if(level <= 10) {
+                            question = `${factor}(${b}x + ${c})`;
+                            correctAnswer = `${factor*b}x + ${factor*c}`;
+                        } else {
+                           if(Math.random() > 0.5) b *= -1;
+                           if(Math.random() > 0.5) c *= -1;
+                           question = `${factor}(${b}x ${c >= 0 ? '+' : '-'} ${Math.abs(c)})`;
+                           const term1 = factor * b;
+                           const term2 = factor * c;
+                           correctAnswer = `${term1}x ${term2 >= 0 ? '+' : '-'} ${Math.abs(term2)}`;
+                        }
+                        options.add(correctAnswer);
+                        options.add(`${factor*b}x - ${factor*c}`);
+                        options.add(`${factor*c}x + ${factor*b}`);
+                        break;
+                    case 1: // Cuadrado de Binomio
+                        const sign = (level <= 10 || Math.random() > 0.5) ? '+' : '-';
+                        const x2_term_cb = a === 1 ? 'x<sup>2</sup>' : `${a*a}x<sup>2</sup>`;
+                        const ax_term_cb = a === 1 ? 'x' : `${a}x`;
+                        question = `(${ax_term_cb} ${sign} ${b})<sup>2</sup>`;
+                        correctAnswer = `${x2_term_cb} ${sign} ${2*a*b}x + ${b*b}`;
+                        options.add(correctAnswer);
+                        options.add(`${x2_term_cb} ${sign === '+' ? '-' : '+'} ${2*a*b}x + ${b*b}`);
+                        options.add(`${x2_term_cb} + ${b*b}`);
+                        break;
+                    case 2: // Suma por Diferencia
+                        const x2_term_sd = a === 1 ? 'x<sup>2</sup>' : `${a*a}x<sup>2</sup>`;
+                        const ax_term_sd = a === 1 ? 'x' : `${a}x`;
+                        question = `(${ax_term_sd} + ${b})(${ax_term_sd} - ${b})`;
+                        correctAnswer = `${x2_term_sd} - ${b*b}`;
+                        options.add(correctAnswer);
+                        options.add(`${x2_term_sd} + ${b*b}`);
+                        options.add(`${a*a}x - ${b}`);
+                        break;
+                    case 3: // Trinomio x^2+bx+c
+                        if (a === b) b++;
+                        if (level <= 10) { a = Math.abs(a); b = Math.abs(b); } 
+                        else { if (Math.random() > 0.5) a *= -1; if (Math.random() > 0.5) b *= -1; }
+                        
+                        const aText = a > 0 ? `+ ${a}` : `- ${Math.abs(a)}`;
+                        const bText = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+                        question = `(x ${aText})(x ${bText})`;
+
+                        const sum = a + b;
+                        const prod = a * b;
+                        const sumText = sum === 0 ? '' : (sum === 1 ? ' + x' : (sum === -1 ? ' - x' : (sum > 0 ? ` + ${sum}x` : ` - ${Math.abs(sum)}x`)));
+                        const prodText = prod === 0 ? '' : (prod > 0 ? ` + ${prod}` : ` - ${Math.abs(prod)}`);
+                        correctAnswer = `x<sup>2</sup>${sumText}${prodText}`;
+
+                        options.add(correctAnswer);
+                        options.add(`x<sup>2</sup>${sum > 0 ? ` - ${sum}x` : ` + ${Math.abs(sum)}x`}${prod > 0 ? ` - ${prod}` : ` + ${Math.abs(prod)}`}`);
+                        options.add(`x<sup>2</sup> + ${a-b}x - ${prod}`);
+                        break;
                 }
-                showScreen('scores');
+                questionKey = question;
+                questionText = question.replace(/<sup>/g, '^').replace(/<\/sup>/g, '');
+                return { question, questionText, correctAnswer, questionKey, answers: Array.from(options) };
+            };
+            generateFactorizationQuestion = (level) => {
+                let type;
+                if (level <= 10) { type = Math.random() > 0.5 ? 0 : 3; } 
+                else if (level <= 25) { type = Math.floor(Math.random() * 4); }
+                else { type = Math.floor(Math.random() * 4); }
+
+                let a = Math.floor(Math.random() * 5) + 1 + Math.floor(level/10);
+                let b = Math.floor(Math.random() * 5) + 1 + Math.floor(level/10);
+                let question = '', correctAnswer = '', questionKey = '';
+                let options = new Set();
+                
+                if (level <= 25 && type !== 0) { a = 1; }
+                if (level > 25 && a === 1) { a = 2; }
+
+                switch(type) {
+                    case 0: // Factor Común
+                        let factor = Math.floor(Math.random() * 5) + 2 + Math.floor(level/10);
+                        let c = Math.floor(Math.random() * 5) + 1 + Math.floor(level/10);
+                        if (factor === c) c++;
+                        if(level <= 10) {
+                            question = `${factor*b}x + ${factor*c}`;
+                            correctAnswer = `${factor}(${b}x + ${c})`;
+                        } else {
+                           if(Math.random() > 0.5) b *= -1;
+                           if(Math.random() > 0.5) c *= -1;
+                           const term1 = factor * b;
+                           const term2 = factor * c;
+                           question = `${term1}x ${term2 >= 0 ? '+' : '-'} ${Math.abs(term2)}`;
+                           correctAnswer = `${factor}(${b}x ${c >= 0 ? '+' : '-'} ${Math.abs(c)})`;
+                        }
+                        options.add(correctAnswer);
+                        options.add(`${b}(${factor}x + ${c})`);
+                        options.add(`${c}(${factor}x + ${b})`);
+                        break;
+                    case 1: // Cuadrado de Binomio
+                        const sign = (level <= 10 || Math.random() > 0.5) ? '+' : '-';
+                        const x2_term_cb = a === 1 ? 'x<sup>2</sup>' : `${a*a}x<sup>2</sup>`;
+                        const ax_term_cb = a === 1 ? 'x' : `${a}x`;
+                        question = `${x2_term_cb} ${sign} ${2*a*b}x + ${b*b}`;
+                        correctAnswer = `(${ax_term_cb} ${sign} ${b})<sup>2</sup>`;
+                        options.add(correctAnswer);
+                        options.add(`(${ax_term_cb} ${sign === '+' ? '-' : '+'} ${b})<sup>2</sup>`);
+                        options.add(`(${b}x + ${a})<sup>2</sup>`);
+                        break;
+                    case 2: // Suma por Diferencia
+                        const x2_term_sd = a === 1 ? 'x<sup>2</sup>' : `${a*a}x<sup>2</sup>`;
+                        const ax_term_sd = a === 1 ? 'x' : `${a}x`;
+                        question = `${x2_term_sd} - ${b*b}`;
+                        correctAnswer = `(${ax_term_sd} + ${b})(${ax_term_sd} - ${b})`;
+                        options.add(correctAnswer);
+                        options.add(`(${ax_term_sd} - ${b})<sup>2</sup>`);
+                        options.add(`(${a === 1 ? '' : a*a}x + ${b})(x - ${b})`);
+                        break;
+                    case 3: // Trinomio x^2+bx+c
+                        if (a === b) b++;
+                        if (level <= 10) { a = Math.abs(a); b = Math.abs(b); } 
+                        else { if (Math.random() > 0.5) a *= -1; if (Math.random() > 0.5) b *= -1; }
+                        
+                        const sum = a + b;
+                        const prod = a * b;
+                        const sumText = sum === 0 ? '' : (sum === 1 ? ' + x' : (sum === -1 ? ' - x' : (sum > 0 ? ` + ${sum}x` : ` - ${Math.abs(sum)}x`)));
+                        const prodText = prod === 0 ? '' : (prod > 0 ? ` + ${prod}` : ` - ${Math.abs(prod)}`);
+                        question = `x<sup>2</sup>${sumText}${prodText}`;
+                        
+                        const aText = a > 0 ? `+ ${a}` : `- ${Math.abs(a)}`;
+                        const bText = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+                        correctAnswer = `(x ${aText})(x ${bText})`;
+
+                        options.add(correctAnswer);
+                        options.add(`(x ${a > 0 ? '-' : '+'} ${Math.abs(a)})(x ${b > 0 ? '-' : '+'} ${Math.abs(b)})`);
+                        options.add(`(x + ${prod})(x + 1)`);
+                        break;
+                }
+                questionKey = question;
+                questionText = question.replace(/<sup>/g, '^').replace(/<\/sup>/g, '');
+                return { question, questionText, correctAnswer, questionKey, answers: Array.from(options) };
+            };
+            generateDecompositionQuestion = (level) => {
+                const difficulty = Math.ceil(level / 1.5); let numberToDecompose; let isForcedPrime = Math.random() < 0.15 && level > 5; let attempts = 0;
+                do { numberToDecompose = Math.floor(Math.random() * difficulty * 4) + 10 + difficulty; attempts++; } while (state.generatedQuestions.has(`decomp-${numberToDecompose}`) && attempts < 20);
+                if (isForcedPrime) { let primeCandidate = numberToDecompose; while (!isPrime(primeCandidate)) { primeCandidate++; } numberToDecompose = primeCandidate; } else if (isPrime(numberToDecompose)) { numberToDecompose++; }
+                const question = `${numberToDecompose}`; const questionKey = `decomp-${numberToDecompose}`; let correctAnswer; let options = new Set();
+                if (isPrime(numberToDecompose)) { correctAnswer = "Es primo"; options.add(correctAnswer); while (options.size < 4) { const f1 = Math.floor(Math.random() * 10) + 2; const f2 = Math.floor(Math.random() * 10) + 2; options.add(`${f1} × ${f2}`); }
+                } else if (level < 20) { let factors = []; for (let i = 2; i * i <= numberToDecompose; i++) { if (numberToDecompose % i === 0) { factors.push(i, numberToDecompose / i); break; } } correctAnswer = `${factors[1]} × ${factors[0]}`; options.add(correctAnswer);
+                    while (options.size < 4) { const offset = Math.floor(Math.random() * 3) + 1; const wrongF1 = factors[0] + (Math.random() > 0.5 ? offset : -offset); const wrongF2 = factors[1] + (Math.random() > 0.5 ? offset : -offset); if (wrongF1 > 1 && wrongF2 > 1 && (wrongF1 * wrongF2 !== numberToDecompose)) { options.add(`${wrongF2} × ${wrongF1}`); } else { const randF1 = Math.floor(Math.random() * 15) + 2; const randF2 = Math.floor(Math.random() * 15) + 2; if (randF1 * randF2 !== numberToDecompose) options.add(`${randF1} × ${randF2}`); } }
+                } else { let f = [1,1,1]; let rem = numberToDecompose; for (let i = 2; i*i <= rem; i++) { if (rem % i === 0) { f[0] = i; rem /= i; break; } } for (let i = 2; i*i <= rem; i++) { if (rem % i === 0) { f[1] = i; rem /= i; break; } } f[2] = rem;
+                    if(f.includes(1) || f.length !== 3) { for (let i = 2; i * i <= numberToDecompose; i++) { if (numberToDecompose % i === 0) { correctAnswer = `${numberToDecompose / i} × ${i}`; break; } } } else { correctAnswer = shuffleArray([...f]).join(' × '); }
+                    options.add(correctAnswer); while (options.size < 4) { const f1 = Math.floor(Math.random() * 10) + 2; const f2 = Math.floor(Math.random() * 10) + 2; const f3 = Math.floor(Math.random() * 10) + 2; if (f1 * f2 * f3 !== numberToDecompose) options.add(`${f1} × ${f2} × ${f3}`); }
+                } return { question, questionText: question, correctAnswer, questionKey, answers: Array.from(options) };
+            };
+            generateNumberQuestion = (type, level) => {
+                const difficulty = Math.ceil(level / 1.5);
+                let question = '', questionText = '', correctAnswer = 0, questionKey = '';
+                switch (type) {
+                    case 'Suma y Resta': { const a = Math.floor(Math.random() * difficulty * 10) + difficulty * 2; const b = Math.floor(Math.random() * difficulty * 10) + difficulty * 2; const isSum = Math.random() > 0.5 || a < b; question = isSum ? `${a} + ${b}` : `${a} - ${b}`; correctAnswer = isSum ? a + b : a - b; questionKey = isSum ? `${a}+${b}` : `${a}-${b}`; break; }
+                    case 'Multiplicación': { const a = Math.floor(Math.random() * (difficulty / 2 + 2)) + 2; const b = Math.floor(Math.random() * 15) + Math.ceil(level / 2.5); question = `${a} × ${b}`; correctAnswer = a * b; questionKey = `${a}*${b}`; break; }
+                    case 'División': { const divisor = Math.floor(Math.random() * 12) + Math.ceil(level/3); const quotient = Math.floor(Math.random() * (difficulty + 2)) + 2; const dividend = divisor * quotient; question = `${dividend} ÷ ${divisor}`; correctAnswer = quotient; questionKey = `${dividend}/${divisor}`; break; }
+                    case 'Potencias': { const base = Math.floor(Math.random() * Math.min(level / 2, 15)) + 2; const exponent = Math.floor(Math.random() * 2) + 2 + Math.floor(level / 15); question = `${base}<sup>${exponent}</sup>`; questionText = `${base}^${exponent}`; correctAnswer = Math.pow(base, exponent); questionKey = questionText; break; }
+                    case 'Raíces': { const base = Math.floor(Math.random() * (difficulty + 5)) + 3; const squared = base * base; question = `√${squared}`; questionText = `sqrt(${squared})`; correctAnswer = base; questionKey = questionText; break; }
+                }
+                return { question, questionText: questionText || question, correctAnswer, questionKey, answers: [] };
             }
+            generateOptions = (correct) => { let options = new Set([correct]); while (options.size < 4) { const offsetMagnitude = Math.max(1, Math.floor(Math.abs(correct) / 10) || 1); const offset = (Math.floor(Math.random() * 10) + 1) * (Math.random() > 0.5 ? 1 : -1) * offsetMagnitude; let wrongAnswer = correct + offset; if (wrongAnswer !== correct) { options.add(wrongAnswer); } } return Array.from(options); };
+            shuffleArray = (array) => { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; };
+            updateHUD = () => { scoreDisplay.textContent = state.score; const maxQuestions = state.currentCategory === 'Álgebra' ? MAX_QUESTIONS_ALGEBRA : MAX_QUESTIONS_NUMBERS; questionCounterDisplay.textContent = `${state.questionNumber}/${maxQuestions}`; livesContainer.innerHTML = ''; for (let i = 0; i < 3; i++) { const heartClass = i < state.lives ? 'text-red-500' : 'text-slate-600'; livesContainer.innerHTML += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24" fill="currentColor" class="w-8 h-8 ${heartClass}"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-1.344-.688 11.855 11.855 0 01-1.966-1.56c-1.11-1.04-1.966-2.174-2.634-3.433C6.68 14.08 6 12.86 6 11.693c0-1.05.37-2.09.986-2.914.615-.825 1.472-1.457 2.457-1.784a4.42 4.42 0 012.796.037c.99.345 1.853.973 2.534 1.784.68.81 1.035 1.86.986 2.914-.049 1.167-.68 2.388-1.354 3.642a11.855 11.855 0 01-1.966 1.56 15.247 15.247 0 01-1.344.688l-.022.012-.007.003z" /></svg>`; } };
+            playFeedback = (isCorrect) => { if (audioInitialized) { if (isCorrect) { correctSound.triggerAttackRelease("C5", "0.1"); } else { incorrectSound.triggerAttackRelease("G2", "0.2"); } } const overlay = isCorrect ? feedbackCorrect : feedbackIncorrect; overlay.classList.add('show'); setTimeout(() => { overlay.classList.remove('show'); }, 150); };
+            showScores = () => { scoresList.innerHTML = ''; const sortedGames = GAME_MODES[state.currentCategory].filter(g => g !== 'Puntajes' && state.highScores[g]); if (sortedGames.length === 0) { scoresList.innerHTML = '<p class="text-slate-400 text-center">Aún no tienes récords. ¡A jugar!</p>'; } else { sortedGames.forEach(game => { scoresList.innerHTML += `<div class="flex justify-between items-center bg-slate-700 p-3 rounded-lg"><span class="font-semibold">${game}</span><span class="font-bold text-blue-400">${state.highScores[game]}</span></div>`; }); } showScreen('scores'); };
 
             init();
         });
