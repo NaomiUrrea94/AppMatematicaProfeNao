@@ -1,0 +1,21 @@
+{
+  "name": "Desafío Profe Nao",
+  "short_name": "Desafío PN",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
+  "description": "Una app para practicar matemáticas y mejorar tu velocidad.",
+  "icons": [
+    {
+      "src": "https://profenao.github.io/desafio-matematico/icono.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://profenao.github.io/desafio-matematico/icono.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
